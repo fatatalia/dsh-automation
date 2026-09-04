@@ -27,6 +27,13 @@ const UNATTENDED_TOOL_ALLOWLIST = new Set([
   'web_search', 'web_fetch',
   'skill',
   'session_search', 'session_trace', 'session_event_read', 'session_event_search', 'session_event_trace',
+  // 2026-09-04 新增：HA 只读查询工具——无人值守自动化需要查设备状态（如扫地机电量）。
+  // 刻意不含 ha_call_service（设备控制）与 ha_render_template（模板执行），保持无人值守只读。
+  'ha_get_state', 'ha_list_entities', 'ha_list_areas', 'ha_list_devices', 'ha_list_scenes',
+  'ha_health', 'ha_history', 'ha_dashboard',
+  // 2026-09-04 新增：automation 管理工具——达标后自动化可自查/自删，不再依赖主会话兜底。
+  // 刻意不含 automation_create / automation_run_now（无人值守不应创建新任务或触发其他自动化）。
+  'automation_list', 'automation_runs', 'automation_delete',
 ])
 
 /** Final scoped denial for capabilities that require a person or spawn another authority boundary. */
