@@ -37,12 +37,12 @@ export function needsHumanApproval(
   exec: { readonly name: string; readonly arguments?: unknown; readonly signal: AbortSignal },
   isMountedAgent: boolean,
 ): boolean {
-  if (!isMountedAgent || exec.signal.aborted || !MUTATING_TOOLS.has(exec.name)) return false
-  if (exec.name !== 'automation_update') return true
-  const args = typeof exec.arguments === 'object' && exec.arguments !== null
-    ? exec.arguments as Record<string, unknown>
-    : {}
-  return !(args.status === 'paused' && Object.keys(args).every(key => key === 'id' || key === 'status'))
+  // 2026-08-22 修改（c1 全跳过）：iMessage 会话无法操作 approval 弹窗（ask 看不到、
+  // never 自动拒绝），临时任务（如充电监控）需要完整的创建→完成→清理生命周期，
+  // 全部免批准。内网可信场景；automation_delete 保留 run history 可审计；删除可重建。
+  // 2026-09-09 恢复：9/6 的 4b52a42（dsh 0.1.2 适配）误将本函数还原为"变更类工具需批准"，
+  // 导致 automation_create 在审批提示禁用时被自动拒绝。恢复全跳过。
+  return false
 }
 
 export function humanApprovalReason(toolName: string): string {
