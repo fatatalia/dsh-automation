@@ -289,6 +289,14 @@ Cordis dispose 会停止 clock、取消插件拥有的 live handle、移除 tool
 
 当前只实现 local execution。在 DSH 提供稳定的 worktree lifecycle service 之前，不应该用一个 UI 开关声称提供 worktree isolation。
 
+### 🔧 dsh 0.1.5 兼容
+
+适配 dsh 0.1.2 → 0.1.5 的 API 变化（2026-09-10）：
+
+- `agents.create` 自 0.1.5 起需要 `ownerCtx` 第一参（0.1.2 为单参 `options`）。executor 按函数形参个数探测（`create.length >= 2`）并包装，同一 bundle 双版本通用。
+- `setup` 回调自 0.1.5 起显式传入 scoped `agent` 第二参（`ctx.agent` 已移除）；0.1.2 时回退用 `agentCtx.agent`。
+- 插件 `inject` 列表声明了 `webServer`（0.1.5 严格检查 inject 声明）。
+
 ### 🧪 开发
 
 ```bash

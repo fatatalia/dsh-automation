@@ -290,6 +290,14 @@ Version 0.1 deliberately does not provide:
 
 Only local execution is implemented. A stable DSH worktree lifecycle service should exist before a UI toggle claims worktree isolation.
 
+### 🔧 dsh 0.1.5 compatibility
+
+Adapted for the dsh 0.1.2 → 0.1.5 API changes (2026-09-10):
+
+- `agents.create` now takes an `ownerCtx` first argument (0.1.2 took a single `options`). The executor probes the function arity (`create.length >= 2`) and wraps accordingly, so the same bundle runs on both versions.
+- The `setup` callback now receives the scoped `agent` as its second argument (`ctx.agent` was removed in 0.1.5); the executor falls back to `agentCtx.agent` on 0.1.2.
+- `webServer` is declared in the plugin `inject` list (0.1.5 enforces inject declarations strictly).
+
 ### 🧪 Development
 
 ```bash

@@ -141,19 +141,24 @@ export async function executeAutomationRun(
   let handle: Awaited<ReturnType<Context['agents']['create']>> | undefined
   let timeout: ReturnType<typeof setTimeout> | undefined
   let removeCancellationListener = () => {}
+  // 0.1.5 起 agents.create 需要 ownerCtx 第一参（0.1.2 为单参 options）。按形参个数探测，双版本兼容。
+  const createAgent = ctx.agents.create.length >= 2
+    ? (options: Parameters<Context['agents']['create']>[1]) => ctx.agents.create(ctx, options)
+    : (options: Parameters<Context['agents']['create']>[0]) => ctx.agents.create(options)
   try {
-    handle = await ctx.agents.withoutInitiator(() => ctx.agents.create({
+    handle = await ctx.agents.withoutInitiator(() => createAgent({
       sessionId,
       ...(config.signal === undefined ? {} : { signal: config.signal }),
       meta: { cwd: target.cwd, agentPreset: target.agentPreset },
       agentOptions: { provider: selection.provider, model: selection.model },
-      setup: async (agentCtx: Context) => {
+      setup: async (agentCtx: Context, agent?: Context['agent']) => {
         await ctx.agentPresets.mount(agentCtx, target.agentPreset)
         installModelSelection(agentCtx, { current: selection, assembled: undefined })
-        const agent = agentCtx.agent
-        if (agent === undefined) throw new Error('automation setup has no scoped Agent')
-        setSandboxMode(agent.session, target.permissionPreset)
-        setApprovalPolicy(agent.session, 'never')
+        // 0.1.5 起 setup 回调显式传入 agent 第二参（ctx.agent 已移除）；0.1.2 从 agentCtx.agent 取。
+        const scopedAgent = agent ?? agentCtx.agent
+        if (scopedAgent === undefined) throw new Error('automation setup has no scoped Agent')
+        setSandboxMode(scopedAgent.session, target.permissionPreset)
+        setApprovalPolicy(scopedAgent.session, 'never')
         agentCtx.tools.guard((exec: ToolExecution) => unattendedToolGuardReason(exec.name, exec.arguments))
       },
     }))
